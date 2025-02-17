@@ -2,8 +2,10 @@ package com.my.mapService.controller;
 
 import com.my.mapService.dto.User;
 import com.my.mapService.service.UserServiceImpl;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,7 +35,7 @@ public class UserController {
     public String signup(User user) {
         System.out.println(user);
         userService.signUp(user);
-        return "redirect:/userList";
+        return "redirect:/";
     }
 
     @GetMapping("userList")
@@ -45,10 +47,15 @@ public class UserController {
 
     @GetMapping("/user/update/{id}")
     public String update(@PathVariable("id") String id
-                    , Model model) {
-        Optional<User> findUser = userService.findById(id);
-        model.addAttribute("user", findUser);
-        return "/users/updateUser";
+                    , Model model , HttpSession session) {
+        User sessionUser = (User) session.getAttribute("sessionInfo");
+        if (ObjectUtils.isEmpty(sessionUser)) {
+            return "users/login";
+        } else {
+            Optional<User> findUser = userService.findById(id);
+            model.addAttribute("user", findUser);
+            return "/users/updateUser";
+        }
     }
 
     @PostMapping("/user/update")
@@ -61,5 +68,10 @@ public class UserController {
     public String delete(@PathVariable("id") String id) {
         userService.deleteById(id);
         return "redirect:/userList";
+    }
+
+    @GetMapping("/user/myPage")
+    public String mypage() {
+        return "/users/myPage";
     }
 }
